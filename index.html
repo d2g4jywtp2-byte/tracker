@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#090a0d">
+<title>TRACKER — личный трекер</title>
+<link rel="manifest" href="manifest.webmanifest">
+<style>
+:root{color-scheme:dark;--bg:#090a0d;--panel:#14161c;--panel2:#1b1e26;--line:#292d37;--muted:#858b99;--text:#f2f3f6;--blue:#4b8dff;--green:#42c98a;--red:#ff6675}
+*{box-sizing:border-box}html,body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display",Inter,Arial,sans-serif}
+body{padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom);min-height:100vh}
+button,input,select{font:inherit}button{cursor:pointer;color:inherit}
+.app{max-width:1050px;margin:auto;padding:20px 16px 42px}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:4px 0 22px}
+.brand{font-size:25px;font-weight:850;letter-spacing:2px}.sub{font-size:10px;letter-spacing:2px;color:var(--muted);margin-top:4px}
+.iconbtn,.tab,.action,.navbtn{border:1px solid var(--line);background:var(--panel);border-radius:12px;padding:10px 13px}
+.iconbtn{font-size:19px;width:42px;height:42px}
+.tabs{display:flex;gap:7px;overflow:auto;margin-bottom:16px;padding-bottom:3px}
+.tab{white-space:nowrap;color:var(--muted);font-size:13px}.tab.active{background:#1a2a43;border-color:#31598e;color:#fff}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:16px;margin-bottom:14px}
+.eyebrow{font-size:10px;letter-spacing:1.7px;color:var(--muted);font-weight:700}
+.summarytop{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:7px 0 10px}
+.big{font-size:34px;font-weight:800;letter-spacing:-1px}.muted{color:var(--muted)}
+.track{height:8px;background:#30343e;border-radius:99px;overflow:hidden}.fill{height:100%;background:var(--blue);border-radius:99px;transition:width .2s}
+.summaryfoot{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-top:9px}
+.sectionhead{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:20px 2px 11px}
+h2{font-size:16px;margin:0;font-weight:700}.small{font-size:12px;color:var(--muted)}
+.action{background:#1b2d48;border-color:#31598e;font-size:13px;font-weight:650}
+.task{padding:14px 0;border-bottom:1px solid var(--line)}.task:last-child{border:0;padding-bottom:0}
+.taskhead{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.taskname{font-size:14px;font-weight:650;line-height:1.35}.tag{font-size:10px;color:#a9bad5;margin-top:5px}
+.percent{font-size:13px;font-weight:750;min-width:42px;text-align:right}
+.taskprogress{display:flex;align-items:center;gap:10px;margin:10px 0}
+.days{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px;margin-top:10px}
+.day{display:flex;flex-direction:column;align-items:center;gap:5px;min-width:0}
+.daylabel{font-size:9px;color:var(--muted)}
+.check{appearance:none;-webkit-appearance:none;width:27px;height:27px;border:1px solid #464b58;background:#20232b;border-radius:8px;display:grid;place-items:center;margin:0}
+.check:checked{background:var(--blue);border-color:var(--blue)}
+.check:checked:after{content:"✓";font-size:17px;color:white;font-weight:800}
+.check:disabled{opacity:.25}
+.monthgrid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin-top:12px}
+.datecell{min-height:45px;border:1px solid var(--line);background:#101218;border-radius:9px;padding:5px;display:flex;flex-direction:column;justify-content:space-between;font-size:11px;color:#d9dce4}
+.datecell.today{border-color:var(--blue)}.datecell .dot{height:4px;border-radius:4px;background:#30343e}.datecell.done .dot{background:var(--green)}
+.monthcards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:12px}
+.monthcard{background:#101218;border:1px solid var(--line);border-radius:12px;padding:10px;text-align:left}
+.monthcard strong{font-size:12px}.monthcard .mpercent{font-size:19px;font-weight:800;margin:7px 0}
+.monthcard .track{height:5px}
+.weekdays{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;color:var(--muted);font-size:9px;text-align:center}
+.controls{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:8px 0 12px}
+.navbtn{padding:8px 11px}.period{font-weight:750;font-size:15px;text-align:center;flex:1}
+.formgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.field{display:flex;flex-direction:column;gap:6px}.field.full{grid-column:1/-1}
+label{font-size:11px;color:var(--muted)}
+input[type=text],input[type=number],select{width:100%;background:#0d0f14;border:1px solid var(--line);border-radius:10px;padding:12px;color:var(--text);outline:none}
+input:focus,select:focus{border-color:var(--blue)}
+.primary{background:var(--blue);color:white;border:0;border-radius:11px;padding:12px 15px;font-weight:750}
+.secondary{background:#20232b;border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+.danger{color:var(--red);background:transparent;border:0;padding:5px;font-size:12px}
+.empty{text-align:center;padding:25px 10px;color:var(--muted);font-size:13px}
+.footer{text-align:center;color:#626876;font-size:10px;padding:12px}
+.hidden{display:none!important}
+@media(min-width:700px){.app{padding:28px 24px}.layout{display:grid;grid-template-columns:1.1fr .9fr;gap:14px}.layout .panel{margin:0}.monthcards{grid-template-columns:repeat(4,1fr)}}
+@media(max-width:380px){.app{padding-left:12px;padding-right:12px}.panel{padding:13px}.check{width:24px;height:24px}.days{gap:3px}}
+</style>
+</head>
+<body>
+<div class="app">
+<header><div><div class="brand">TRACKER<span style="color:var(--blue)">.</span></div><div class="sub">ТВОЯ СИСТЕМА · ТВОЙ ПРОГРЕСС</div></div><button class="iconbtn" id="settingsBtn" aria-label="Настройки">⚙</button></header>
+<div class="tabs" id="tabs">
+<button class="tab active" data-view="week">Неделя</button><button class="tab" data-view="month">Месяц</button><button class="tab" data-view="year">Год</button><button class="tab" data-view="tasks">Задачи</button>
+</div>
+<div id="content"></div>
+<div class="footer">Данные хранятся только в этом браузере на твоём iPhone.</div>
+</div>
+<script>
+const KEY='tracker_local_v2';
+const today=new Date(); today.setHours(0,0,0,0);
+const iso=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+const parse=s=>{const [y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d)};
+const addDays=(d,n)=>{let x=new Date(d);x.setDate(x.getDate()+n);return x};
+const startWeek=d=>{let x=new Date(d);x.setDate(x.getDate()-((x.getDay()+6)%7));return x};
+const fmt=(d,opt={day:'numeric',month:'short'})=>new Intl.DateTimeFormat('ru-RU',opt).format(d);
+const months=['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
+const shortDays=['ПН','ВТ','СР','ЧТ','ПТ','СБ','ВС'];
+let initialCursor=new Date(today);if((today.getDay()+6)%7===6)initialCursor=addDays(startWeek(today),7);let state=load(),view='week',cursor=initialCursor,editingId=null;
+function seedTasks(){
+return [
+{id:'wake',name:'Проснуться утром',type:'scheduled',days:[0,1,2,3,4,5],done:{}},
+{id:'teeth_morning',name:'Зубы (утром)',type:'scheduled',days:[0,1,2,3,4,5],done:{}},
+{id:'breakfast',name:'Еда (утром)',type:'scheduled',days:[0,1,2,3,4],done:{}},
+{id:'college',name:'Учёба (колледж)',type:'scheduled',days:[0,1,2,3,4],done:{}},
+{id:'food_after_college',name:'Еда (после учёбы)',type:'scheduled',days:[0,1,2,3,4],done:{}},
+{id:'teeth_after_college',name:'Зубы (после учёбы)',type:'scheduled',days:[0,1,2,3,4],done:{}},
+{id:'shaving',name:'Бритьё',type:'scheduled',days:[1,3,5],done:{}},
+{id:'video',name:'Видео',type:'scheduled',days:[0,1,2,3,4],done:{}},
+{id:'meal_prep',name:'Приготовление еды (на завтра)',type:'scheduled',days:[0,1,2,3,4],done:{}},
+{id:'workout',name:'Тренировка',type:'scheduled',days:[0,2,4],done:{}},
+{id:'shower',name:'Душ',type:'scheduled',days:[1,3,5],done:{}},
+{id:'food_after_workout',name:'Еда (после тренировки)',type:'scheduled',days:[0,1,2,3,4],done:{}},
+{id:'face',name:'Лицо',type:'scheduled',days:[1,3],done:{}},
+{id:'teeth_after_shower',name:'Зубы (после душа)',type:'scheduled',days:[5],done:{}},
+{id:'editing',name:'Монтаж',type:'scheduled',days:[0,1,2,3,4,5],done:{}},
+{id:'teeth_evening',name:'Зубы (вечером)',type:'scheduled',days:[0,1,2,3,4,5],done:{}},
+{id:'myuning',name:'Мюнинг',type:'scheduled',days:[0,2,4],done:{}},
+{id:'work_saturday',name:'Работа',type:'scheduled',days:[5],done:{}}
+];
+}
+function load(){
+try{
+const saved=localStorage.getItem(KEY);
+if(saved){const parsed=JSON.parse(saved);if(parsed&&Array.isArray(parsed.tasks))return parsed;}
+return {tasks:seedTasks()};
+}catch(e){return {tasks:seedTasks()}}
+}
+function save(){localStorage.setItem(KEY,JSON.stringify(state))}
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function taskActive(t,d){let day=(d.getDay()+6)%7;if(t.type==='daily')return true;if(t.type==='scheduled')return t.days.includes(day);return true}
+function done(t,d){return !!t.done?.[iso(d)]}
+function setDone(t,d,v){t.done=t.done||{};if(v)t.done[iso(d)]=true;else delete t.done[iso(d)];save();render()}
+function periodStats(t,start,end){let eligible=0,completed=0;if(t.type==='weekly'){let s=startWeek(start);for(let w=new Date(s);w<=end;w=addDays(w,7)){let count=0;for(let i=0;i<7;i++){let d=addDays(w,i);if(d<start||d>end)continue;if(done(t,d))count++}eligible+=t.target;completed+=Math.min(count,t.target)}return {eligible,completed,pct:eligible?Math.round(completed/eligible*100):0}}
+for(let d=new Date(start);d<=end;d=addDays(d,1)){if(taskActive(t,d)){eligible++;if(done(t,d))completed++}}return {eligible,completed,pct:eligible?Math.round(completed/eligible*100):0}}
+function overall(start,end){let a=0,b=0;state.tasks.forEach(t=>{let s=periodStats(t,start,end);a+=s.completed;b+=s.eligible});return {a,b,p:b?Math.round(a/b*100):0}}
+function progressCard(start,end,title){let s=overall(start,end);return `<div class="panel"><div class="eyebrow">${title}</div><div class="summarytop"><div class="big">${s.p}%</div><div class="small">${s.a} / ${s.b} выполнений</div></div><div class="track"><div class="fill" style="width:${s.p}%"></div></div><div class="summaryfoot"><span>Выполнено</span><span>${s.b-s.a} осталось</span></div></div>`}
+function taskCard(t,start,end,mode){let s=periodStats(t,start,end);let label=t.type==='daily'?'Ежедневная':t.type==='scheduled'?'По дням недели':`Цель: ${t.target} раз(а) в неделю`;
+let dates=[];for(let d=new Date(start);d<=end;d=addDays(d,1))dates.push(new Date(d));
+let cells=dates.map(d=>{let active=taskActive(t,d);return `<div class="day"><span class="daylabel">${shortDays[(d.getDay()+6)%7]}</span><input class="check" type="checkbox" aria-label="${fmt(d,{day:'numeric',month:'long'})}" ${done(t,d)?'checked':''} ${!active?'disabled':''} onchange="toggle('${t.id}','${iso(d)}',this.checked)"></div>`}).join('');
+return `<div class="task"><div class="taskhead"><div><div class="taskname">${esc(t.name)}</div><div class="tag">${label}</div></div><div class="percent">${s.pct}%</div></div><div class="taskprogress"><div class="track" style="flex:1"><div class="fill" style="width:${s.pct}%"></div></div><span class="small">${s.completed}/${s.eligible}</span></div>${mode==='week'?`<div class="days">${cells}</div>`:''}</div>`}
+window.toggle=(id,date,v)=>{let t=state.tasks.find(x=>x.id===id);if(t)setDone(t,parse(date),v)};
+function taskList(start,end,mode){if(!state.tasks.length)return `<div class="panel empty">Пока нет задач. Нажми «Добавить задачу», чтобы начать.</div>`;return `<div class="panel">${state.tasks.map(t=>taskCard(t,start,end,mode)).join('')}</div>`}
+function weekView(){let start=startWeek(cursor),end=addDays(start,6);return `${progressCard(start,end,'ОБЩИЙ ПРОГРЕСС · НЕДЕЛЯ')}<div class="sectionhead"><h2>Задачи на неделю</h2><button class="action" onclick="openForm()">＋ Добавить</button></div><div class="controls"><button class="navbtn" onclick="move(-7)">‹</button><div class="period">${fmt(start,{day:'numeric',month:'short'})} — ${fmt(end,{day:'numeric',month:'short',year:'numeric'})}</div><button class="navbtn" onclick="move(7)">›</button></div><div class="small" style="margin:0 2px 10px">Шаблон твоего распорядка: все отметки сброшены.</div>${taskList(start,end,'week')}<div class="panel small" style="text-align:center">Воскресенье — день отдыха. Задачи не запланированы.</div>`}
+function monthView(){let y=cursor.getFullYear(),m=cursor.getMonth(),start=new Date(y,m,1),end=new Date(y,m+1,0);let first=(start.getDay()+6)%7;let cells='';for(let i=0;i<first;i++)cells+='<div></div>';for(let d=1;d<=end.getDate();d++){let date=new Date(y,m,d),s=overall(date,date),isToday=iso(date)===iso(today);cells+=`<button class="datecell ${s.p===100&&s.b>0?'done':''} ${isToday?'today':''}" onclick="cursor=new Date(${y},${m},${d});setView('week')"><span>${d}</span><span class="dot"></span></button>`}
+return `${progressCard(start,end,'ОБЩИЙ ПРОГРЕСС · МЕСЯЦ')}<div class="controls"><button class="navbtn" onclick="moveMonth(-1)">‹</button><div class="period">${months[m]} ${y}</div><button class="navbtn" onclick="moveMonth(1)">›</button></div><div class="panel"><div class="weekdays">${shortDays.map(x=>`<span>${x}</span>`).join('')}</div><div class="monthgrid">${cells}</div><div class="small" style="margin-top:10px">Нажми на дату, чтобы открыть соответствующую неделю.</div></div><div class="sectionhead"><h2>Прогресс задач</h2><button class="action" onclick="openForm()">＋ Добавить</button></div>${taskList(start,end,'month')}`}
+function yearView(){let y=cursor.getFullYear(),start=new Date(y,0,1),end=new Date(y,11,31),cards=months.map((name,m)=>{let a=new Date(y,m,1),b=new Date(y,m+1,0),s=overall(a,b);return `<button class="monthcard" onclick="cursor=new Date(${y},${m},1);setView('month')"><strong>${name}</strong><div class="mpercent">${s.p}%</div><div class="track"><div class="fill" style="width:${s.p}%"></div></div><div class="small" style="margin-top:7px">${s.a}/${s.b}</div></button>`}).join('');
+return `${progressCard(start,end,'ОБЩИЙ ПРОГРЕСС · ГОД')}<div class="controls"><button class="navbtn" onclick="moveYear(-1)">‹</button><div class="period">${y} год</div><button class="navbtn" onclick="moveYear(1)">›</button></div><div class="monthcards">${cards}</div><div class="sectionhead"><h2>Задачи за год</h2><button class="action" onclick="openForm()">＋ Добавить</button></div>${taskList(start,end,'month')}`}
+function tasksView(){return `<div class="sectionhead"><h2>Мои задачи</h2><button class="action" onclick="openForm()">＋ Добавить</button></div>${state.tasks.length?`<div class="panel">${state.tasks.map(t=>`<div class="taskhead" style="padding:9px 0"><div><div class="taskname">${esc(t.name)}</div><div class="tag">${t.type==='daily'?'Ежедневная':t.type==='scheduled'?'По выбранным дням':'Еженедельная цель · '+t.target+' раз(а)'}</div></div><button class="secondary" onclick="editTask('${t.id}')">Изменить</button></div>`).join('')}</div>`:`<div class="panel empty">Добавь первую задачу — ежедневную, по расписанию или с недельной целью.</div>`}`}
+function render(){document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('active',b.dataset.view===view));let c=document.getElementById('content');c.innerHTML=view==='week'?weekView():view==='month'?monthView():view==='year'?yearView():tasksView()}
+function setView(v){view=v;render()}function move(n){cursor=addDays(cursor,n);render()}function moveMonth(n){cursor=new Date(cursor.getFullYear(),cursor.getMonth()+n,1);render()}function moveYear(n){cursor=new Date(cursor.getFullYear()+n,cursor.getMonth(),1);render()}
+document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>setView(b.dataset.view));
+function openForm(t=null){editingId=t?.id||null;let days=t?.days||[0,1,2,3,4,5,6];let overlay=document.createElement('div');overlay.id='modal';overlay.style.cssText='position:fixed;inset:0;background:#000b;z-index:5;display:flex;align-items:flex-end;justify-content:center;padding:12px';overlay.innerHTML=`<div class="panel" style="width:100%;max-width:520px;max-height:90vh;overflow:auto;margin:0"><div class="sectionhead" style="margin-top:0"><h2>${t?'Изменить задачу':'Новая задача'}</h2><button class="danger" onclick="closeForm()">Закрыть ✕</button></div><div class="formgrid"><div class="field full"><label>Название задачи</label><input id="taskName" type="text" maxlength="70" placeholder="Например, читать 30 минут" value="${esc(t?.name||'')}"></div><div class="field full"><label>Тип задачи</label><select id="taskType" onchange="typeFields()"><option value="daily" ${t?.type==='daily'?'selected':''}>Ежедневная</option><option value="scheduled" ${t?.type==='scheduled'?'selected':''}>По выбранным дням</option><option value="weekly" ${t?.type==='weekly'?'selected':''}>Недельная цель</option></select></div><div id="extra" class="field full"></div><div class="field full"><button class="primary" onclick="saveTask()">${t?'Сохранить изменения':'Добавить задачу'}</button>${t?`<button class="danger" style="margin-top:8px" onclick="deleteTask('${t.id}')">Удалить задачу</button>`:''}</div></div></div>`;document.body.appendChild(overlay);window._editingDays=days;typeFields()}
+function typeFields(){let type=document.getElementById('taskType').value,extra=document.getElementById('extra');if(type==='scheduled'){extra.innerHTML=`<label>Дни недели</label><div style="display:flex;flex-wrap:wrap;gap:12px;margin-top:8px">${shortDays.map((d,i)=>`<label style="display:flex;align-items:center;gap:5px;color:var(--text)"><input type="checkbox" class="weekday" value="${i}" ${window._editingDays.includes(i)?'checked':''}>${d}</label>`).join('')}</div>`}else if(type==='weekly'){extra.innerHTML=`<label>Сколько раз в неделю?</label><input id="target" type="number" min="1" max="7" value="${editingId?state.tasks.find(t=>t.id===editingId).target:3}">`}else extra.innerHTML='<div class="small">Задача будет доступна каждый день.</div>'}
+function closeForm(){document.getElementById('modal')?.remove()}
+function saveTask(){let name=document.getElementById('taskName').value.trim(),type=document.getElementById('taskType').value;if(!name){alert('Введи название задачи');return}let old=state.tasks.find(t=>t.id===editingId);let t=old||{id:crypto.randomUUID(),done:{}};t.name=name;t.type=type;if(type==='scheduled'){t.days=[...document.querySelectorAll('.weekday:checked')].map(x=>+x.value);if(!t.days.length){alert('Выбери хотя бы один день');return}}if(type==='weekly'){t.target=Math.max(1,Math.min(7,+document.getElementById('target').value||1));t.days=[0,1,2,3,4,5,6]}if(type==='daily')t.days=[0,1,2,3,4,5,6];if(!old)state.tasks.push(t);save();closeForm();render()}
+function editTask(id){openForm(state.tasks.find(t=>t.id===id))}
+function deleteTask(id){if(confirm('Удалить задачу и её историю выполнения?')){state.tasks=state.tasks.filter(t=>t.id!==id);save();closeForm();render()}}
+document.getElementById('settingsBtn').onclick=()=>{let choice=confirm('Экспортировать резервную копию данных? Нажми OK, чтобы скачать файл.');if(choice){let blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='tracker-backup.json';a.click();URL.revokeObjectURL(a.href)}else if(confirm('Импортировать резервную копию?')){let i=document.createElement('input');i.type='file';i.accept='application/json';i.onchange=()=>{let r=new FileReader();r.onload=()=>{try{let x=JSON.parse(r.result);if(Array.isArray(x.tasks)){state=x;save();render();alert('Данные восстановлены')}else alert('Неверный файл')}catch(e){alert('Не удалось прочитать файл')}};r.readAsText(i.files[0])};i.click()}};
+render();
+if('serviceWorker' in navigator && location.protocol.startsWith('http'))navigator.serviceWorker.register('./sw.js').catch(()=>{});
+</script>
+</body></html>
